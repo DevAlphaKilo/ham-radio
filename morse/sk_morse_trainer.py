@@ -77,7 +77,8 @@ try:
 
             current_letter = ""
 
-        elif button.is_pressed is False:
+        # Add space if message is started
+        elif button.is_pressed is False and len(message) > 0:
             if not space_added:
                 message += " "
                 print("Message: " + message)
