@@ -2,11 +2,19 @@
 #  Morse code trainer
 #
 
-from gpiozero import Button
+import sys
 import time
+from gpiozero import Button
 
 # Set Input 1 for GPIO
 button = Button(21)  # GPIO Pin 40
+
+# Script Timing Variables
+# https://en.wikipedia.org/wiki/Morse_code#Timing
+cw_gap_intra_char = 1    # 0.1 (Default)
+cw_gap_short      = 3    # 3 (Default)
+cw_gap_medium     = 7    # 7 (Default)
+cw_interval       = cw_gap_intra_char * 0.15
 
 # Change these values (in seconds) to suit your style (or 'fist')
 dot_timeout = 0.15
@@ -54,55 +62,61 @@ try:
     while True:
 
         # Wait for a keypress or until a letter has been completed
-        button.wait_for_press(dash_timeout)
+        #button.wait_for_press(dash_timeout)
 
-        # If we've timed out and there's been previous keypresses, show the letter
-        if button.is_pressed is False and len(current_letter) > 0:
+        # Determine keypress value (Not Pressed)
+        if button.is_pressed is False:
 
-            # Check for alphanumeric values
-            if current_letter in morse_alphanumeric:
-                message += morse_alphanumeric[current_letter]
-                print("Message: " + message)
-                space_added = False
+            print(".", end="", flush=True)
 
-            # Check for punctuation values
-            elif current_letter in morse_punctuation:
-                message += morse_punctuation[current_letter]
-                print("Message: " + message)
-                space_added = False
+            # If we've timed out and there's been previous keypresses, show the letter
+            if len(current_letter) > 0:
 
-            # No other valid characters found
-            else:
-                print("Not recognised")
+                # Check for alphanumeric values
+                if current_letter in morse_alphanumeric:
+                    message += morse_alphanumeric[current_letter]
+                    print("Message: " + message)
+                    space_added = False
 
-            current_letter = ""
+                # Check for punctuation values
+                elif current_letter in morse_punctuation:
+                    message += morse_punctuation[current_letter]
+                    print("Message: " + message)
+                    space_added = False
+
+                # No other valid characters found
+                else:
+                    print("Not recognised")
+
+                current_letter = ""
 
         # Add space if message is started
-        elif button.is_pressed is False and len(message) > 0:
-            if not space_added:
-                message += " "
-                print("Message: " + message)
-                space_added = True
+#        elif button.is_pressed is False and len(message) > 0:
+#            if not space_added:
+#                message += " "
+#                print("Message: " + message)
+#                space_added = True
 
-        # Determine keypress value
+        # Determine keypress value (Pressed)
         elif button.is_pressed:
 
             # The key has been pressed, work out if it's a dot or a dash
-            button_down_time = time.time()
-            button.wait_for_release()
-            button_up_time = time.time()
-            button_down_length = button_up_time - button_down_time
+            print("=", end='', flush=True)
+#            button_down_time = time.time()
+#            button.wait_for_release()
+#            button_up_time = time.time()
+#            button_down_length = button_up_time - button_down_time
 
             # Was it a dot or dash?
-            if button_down_length > dot_timeout:
-                print('-', end='', flush=True)
-                current_letter += '-'
+#            if button_down_length > dot_timeout:
+#                print('-', end='', flush=True)
+#                current_letter += '-'
 
-            else:
-                print('.', end='', flush=True)
-                current_letter += '.'
+#            else:
+#                print('.', end='', flush=True)
+#                current_letter += '.'
 
-        time.sleep(0.1)
+        time.sleep(cw_interval)
 
 except KeyboardInterrupt:
     print("\nStopping...")
